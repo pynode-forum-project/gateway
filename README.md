@@ -108,18 +108,18 @@ Gateway (localhost:8080)
     ↓
 CORS Middleware (validates origin)
     ↓
-Body Parser (JSON/URLencoded)
-    ↓
 Logger Middleware (logs request)
     ↓
 Route Matching (/api/auth, /api/users, etc.)
     ↓
 Controller (proxy configuration)
     ↓
-Target Service (5000-5005)
+Target Service (5000-5005) - Body parsing happens here
     ↓
 Response to Client
 ```
+
+**Important:** The gateway does NOT parse request bodies. Body parsing (JSON/form data) is handled by individual backend services. This ensures the request stream is not consumed before being proxied.
 
 ### Example Request
 
@@ -132,6 +132,49 @@ curl -X POST http://localhost:8080/api/auth/login \
 # Get user profile
 curl http://localhost:8080/api/users/profile
 ```
+
+## Architecture Decisions
+
+### Why No Body Parsing at Gateway Level?
+
+**The gateway does NOT use `express.json()` or `express.urlencoded()`.** Here's why:
+
+**The Problem:**
+```javascript
+// ❌ This breaks proxying!
+app.use(express.json());  // Consumes request stream
+app.use('/api/auth', proxy);  // Proxy forwards empty body
+```
+
+When Express body parsers run:
+1. They read the entire request stream
+2. Parse it into `req.body`
+3. The stream is now **consumed** (empty)
+4. `http-proxy-middleware` tries to forward the request
+5. Backend service receives an **empty body** ❌
+
+**The Solution:**
+```javascript
+// ✅ Gateway forwards raw streams
+app.use(corsMiddleware);
+app.use(logger);
+app.use('/api/auth', proxy);  // Proxy forwards full body stream
+```
+
+Backend services handle their own body parsing:
+```javascript
+// In auth-service (Flask)
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()  # Auth service parses body
+    # ... handle login
+```
+
+**Benefits:**
+- ✅ Request bodies arrive intact at backend services
+- ✅ Gateway is a thin, fast routing layer
+- ✅ Each service controls its own parsing strategy
+- ✅ Follows microservices best practices
 
 ## Middleware
 

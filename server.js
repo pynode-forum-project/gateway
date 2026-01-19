@@ -11,10 +11,16 @@ const routes = require("./src/routes");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-app.use(corsMiddleware);
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(logger);
+
+// Global middlewares
+app.use(corsMiddleware); // CORS - must be first
+
+// NOTE: We DO NOT parse request bodies (express.json/urlencoded) at gateway level
+// Body parsing consumes the request stream, preventing http-proxy-middleware
+// from forwarding the body to backend services. Backend services will handle
+// their own body parsing.
+
+app.use(logger); // Request logging
 
 // Mount all routes
 app.use("/", routes);
