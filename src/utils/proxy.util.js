@@ -4,16 +4,16 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
  * Creates a proxy middleware for a given service
  * @param {string} serviceName - Name of the service (for logging)
  * @param {string} targetUrl - Target service URL
- * @param {string} pathPrefix - Path prefix to rewrite (e.g., '/api/auth')
+ * @param {string} targetPrefix - Target path prefix for the backend service (e.g., '/auth' or '/api/users')
  * @returns {Function} Express middleware function
  */
-const createServiceProxy = (serviceName, targetUrl, pathPrefix) => {
+const createServiceProxy = (serviceName, targetUrl, targetPrefix) => {
   return createProxyMiddleware({
     target: targetUrl,
     changeOrigin: true,
-    pathRewrite: { [`^${pathPrefix}`]: '' },
+    pathRewrite: (path) => targetPrefix + path,
     onProxyReq: (proxyReq, req) => {
-      console.log(`[${serviceName} Proxy] ${req.method} ${req.path} -> ${targetUrl}${req.path.replace(pathPrefix, '')}`);
+      console.log(`[${serviceName} Proxy] ${req.method} ${req.path} -> ${targetUrl}${targetPrefix}${req.path}`);
     },
     onError: (err, req, res) => {
       console.error(`[${serviceName} Proxy Error] ${err.message}`);

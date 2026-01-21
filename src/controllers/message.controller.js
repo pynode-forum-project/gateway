@@ -5,7 +5,7 @@ const serviceConfig = require('../config/services');
 const messageProxy = createServiceProxy(
   'Message',
   serviceConfig.message.url,
-  serviceConfig.message.prefix
+  serviceConfig.message.targetPrefix
 );
 
 module.exports = {

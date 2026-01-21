@@ -5,7 +5,7 @@ const serviceConfig = require('../config/services');
 const fileProxy = createServiceProxy(
   'File',
   serviceConfig.file.url,
-  serviceConfig.file.prefix
+  serviceConfig.file.targetPrefix
 );
 
 module.exports = {

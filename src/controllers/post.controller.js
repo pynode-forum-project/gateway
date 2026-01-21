@@ -5,7 +5,7 @@ const serviceConfig = require('../config/services');
 const postProxy = createServiceProxy(
   'Post',
   serviceConfig.post.url,
-  serviceConfig.post.prefix
+  serviceConfig.post.targetPrefix
 );
 
 module.exports = {

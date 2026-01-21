@@ -5,7 +5,7 @@ const serviceConfig = require('../config/services');
 const historyProxy = createServiceProxy(
   'History',
   serviceConfig.history.url,
-  serviceConfig.history.prefix
+  serviceConfig.history.targetPrefix
 );
 
 module.exports = {
