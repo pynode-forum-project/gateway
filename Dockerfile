@@ -6,13 +6,16 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --omit=dev
 
-# Copy application code
-COPY . .
+# Copy source code
+COPY src/ ./src/
+
+# Create logs directory
+RUN mkdir -p logs
 
 # Expose port
 EXPOSE 8080
 
-# Run the application
+# Start the application
 CMD ["npm", "start"]
