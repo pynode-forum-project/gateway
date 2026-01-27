@@ -202,14 +202,16 @@ router.get(
   }),
 );
 
-// History routes
-router.post("/history", createProxy(services.history, { "^/api": "" }));
+// History routes (require authentication)
+router.post("/history", authMiddleware.verifyToken, createProxy(services.history, { "^/api": "" }));
 router.get(
   "/users/:id/history",
+  authMiddleware.verifyToken,
   createProxy(services.history, { "^/api": "" }),
 );
 router.get(
   "/users/:id/history/search",
+  authMiddleware.verifyToken,
   createProxy(services.history, { "^/api": "" }),
 );
 
