@@ -128,6 +128,7 @@ router.post(
   createProxy(services.post, { "^/api": "" }),
 );
 router.get("/posts/drafts", createProxy(services.post, { "^/api": "" }));
+router.get("/posts/hidden", createProxy(services.post, { "^/api": "" }));
 router.get(
   "/posts/banned",
   authMiddleware.requireAdmin,
