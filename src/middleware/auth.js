@@ -30,7 +30,7 @@ class AuthorizationError extends Error {
 /**
  * Verify JWT token middleware
  */
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     
@@ -49,6 +49,21 @@ const verifyToken = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Best-effort check: if user was deleted, force logout.
+    try {
+      await axios.get(`${USER_SERVICE_URL}/internal/users/${decoded.userId}`, {
+        timeout: 2000,
+      });
+    } catch (error) {
+      if (error.response?.status === 404) {
+        return res.status(403).json({
+          error: 'Account has been deleted',
+          message: 'Your account has been deleted. Please log in again.'
+        });
+      }
+      logger.warn(`Failed to verify user existence: ${error.message}`);
+    }
     
     // Check if user is banned
     if (decoded.active === false) {
